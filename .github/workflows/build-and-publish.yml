@@ -1,0 +1,35 @@
+name: Build and publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+defaults:
+  run:
+    working-directory: ./scripts
+    shell: pwsh
+
+jobs:
+  BuildAndPublish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Build
+        run: |
+          ./build.ps1
+
+      - name: Publish
+        env:
+          GITHUBPAT: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./publish.ps1

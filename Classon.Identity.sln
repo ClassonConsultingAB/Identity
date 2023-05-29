@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Classon.Identity", "src\Classon.Identity\Classon.Identity.csproj", "{0935F105-34D4-48FE-B221-02D7D714C1AD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A2A1DEE7-7750-44FF-86FA-887AC22FAED0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "specs", "specs", "{EDC1EB55-2DE0-449B-AFAB-F7BE1DE984BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Classon.Identity.Specs", "specs\Classon.Identity.Specs\Classon.Identity.Specs.csproj", "{B44A871C-6B7C-4FA8-831E-74E13A48469F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0935F105-34D4-48FE-B221-02D7D714C1AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0935F105-34D4-48FE-B221-02D7D714C1AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0935F105-34D4-48FE-B221-02D7D714C1AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0935F105-34D4-48FE-B221-02D7D714C1AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B44A871C-6B7C-4FA8-831E-74E13A48469F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B44A871C-6B7C-4FA8-831E-74E13A48469F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B44A871C-6B7C-4FA8-831E-74E13A48469F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B44A871C-6B7C-4FA8-831E-74E13A48469F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0935F105-34D4-48FE-B221-02D7D714C1AD} = {A2A1DEE7-7750-44FF-86FA-887AC22FAED0}
+		{B44A871C-6B7C-4FA8-831E-74E13A48469F} = {EDC1EB55-2DE0-449B-AFAB-F7BE1DE984BE}
+	EndGlobalSection
+EndGlobal

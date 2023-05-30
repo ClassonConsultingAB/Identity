@@ -29,6 +29,7 @@ jobs:
           ./build.ps1
 
       - name: Publish
+        if: ${{ github.actor != 'dependabot[bot]' }}
         env:
           GITHUBPAT: ${{ secrets.GITHUB_TOKEN }}
         run: |

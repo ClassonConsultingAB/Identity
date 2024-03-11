@@ -106,7 +106,7 @@ public partial class CachingTokenCredentialSpecs
         FakeCredential.SetPerformanceOverhead(TimeSpan.FromSeconds(10));
         var t = Assert.ThrowsAsync<TaskCanceledException>(() =>
             Sut.GetTokenAsync(string.Empty, cts.Token).AsTask());
-        cts.Cancel();
+        await cts.CancelAsync();
         await t;
     }
 

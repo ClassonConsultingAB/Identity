@@ -15,10 +15,6 @@ public class CachingTokenCredentialInputValidationSpecs
     [InlineData(1.0 + 1E-9, false)]
     public void GivenInput_ShouldBeValid(double factor, bool expectedOk)
     {
-        void Action() =>
-            new ServiceCollection()
-                .AddCachingTokenCredential(new FakeCredential(new FakeClock()), countAsNearExpirationFactor: factor);
-
         if (expectedOk)
         {
             Action();
@@ -26,5 +22,10 @@ public class CachingTokenCredentialInputValidationSpecs
         }
 
         Assert.Throws<ArgumentOutOfRangeException>(Action);
+        return;
+
+        void Action() =>
+            new ServiceCollection()
+                .AddCachingTokenCredential(new FakeCredential(new FakeClock()), countAsNearExpirationFactor: factor);
     }
 }

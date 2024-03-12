@@ -17,7 +17,7 @@ Task Publish {
     if ($Packages.Length -eq 0) {
         Fail 'Found no packages to publish'
     }
-    foreach ($package in $packages) {
+    foreach ($package in $Packages) {
         $packagePath = Resolve-Path $package
         Exec { dotnet nuget push $packagePath --api-key $GitHubPat --source $Source --skip-duplicate }
     }

@@ -24,10 +24,9 @@ public static class CachingTokenCredentialExtensions
         if (countAsNearExpirationFactor is < 0.0 or > 1.0)
             throw new ArgumentOutOfRangeException(nameof(countAsNearExpirationFactor));
         return builder
-            .AddSingleton<ICachingTokenClock>(_ => new CachingTokenClock())
             .AddSingleton<TokenCredential>(sp =>
                 CachingTokenCredential.Create(
-                    credential, countAsNearExpirationFactor, accessTokenCache, sp.GetService<ICachingTokenClock>()));
+                    credential, countAsNearExpirationFactor, accessTokenCache, sp.GetService<TimeProvider>()));
     }
 }
 
@@ -44,7 +43,7 @@ public static class TokenCredentialExtensions
         this TokenCredential credential, string scope, CancellationToken? cancellationToken = null)
     {
         var result = await credential.GetTokenAsync(
-                new TokenRequestContext(new[] { scope }), cancellationToken ?? CancellationToken.None)
+                new TokenRequestContext([scope]), cancellationToken ?? CancellationToken.None)
             .ConfigureAwait(false);
         return result.Token;
     }

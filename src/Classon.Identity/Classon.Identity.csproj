@@ -7,6 +7,7 @@
         <Authors>Johan Classon</Authors>
         <Company>Classon Consulting AB</Company>
         <PackageDescription>A TokenCredential decorator with caching behavior.</PackageDescription>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <RepositoryUrl>https://github.com/CABGroupAB/Classon.Identity</RepositoryUrl>
         <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
@@ -18,7 +19,10 @@
     <ItemGroup>
       <PackageReference Include="Azure.Core" Version="1.40.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
-      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.1" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 </Project>

@@ -9,18 +9,18 @@ namespace Classon.Identity.Specs.Support;
 
 internal class FakeCredential : TokenCredential
 {
-    private readonly ICachingTokenClock _clock;
+    private readonly TimeProvider _clock;
     private readonly Dictionary<string, Func<AccessToken>> _scopeToAccessToken = new();
     public int NumberOfRequests { get; private set; }
     private TimeSpan? _overhead;
 
-    public FakeCredential(ICachingTokenClock clock)
+    public FakeCredential(TimeProvider clock)
     {
         _clock = clock;
     }
 
     public AccessToken CreateFakeToken(TimeSpan? validity = null) =>
-        new(Guid.NewGuid().ToString(), _clock.UtcNow.Add(validity ?? TimeSpan.FromHours(1)));
+        new(Guid.NewGuid().ToString(), _clock.GetUtcNow().Add(validity ?? TimeSpan.FromHours(1)));
 
     public void RegisterScope(string scope, Func<AccessToken>? getAccessToken = null)
     {

@@ -7,6 +7,7 @@ using Azure.Core;
 using Classon.Identity.Specs.Support;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
 namespace Classon.Identity.Specs;
@@ -58,7 +59,7 @@ public partial class CachingTokenCredentialSpecs
     {
         SelectedMode = mode;
         var accessToken1 = await RequestAccessTokenAsync(Scope1);
-        FakeClock.UtcNow += TimeSpan.FromMinutes(60);
+        FakeClock.Advance(TimeSpan.FromMinutes(60));
         var accessToken2 = await RequestAccessTokenAsync(Scope1);
         accessToken2.Should().NotBeEquivalentTo(accessToken1);
     }
@@ -68,7 +69,7 @@ public partial class CachingTokenCredentialSpecs
     {
         SelectedMode = mode;
         var accessToken1 = await RequestAccessTokenAsync(Scope1);
-        FakeClock.UtcNow += TimeSpan.FromMinutes(60).Subtract(TimeSpan.FromTicks(1));
+        FakeClock.Advance(TimeSpan.FromMinutes(60).Subtract(TimeSpan.FromTicks(1)));
         var accessToken2 = await RequestAccessTokenAsync(Scope1);
         accessToken2.Should().BeEquivalentTo(accessToken1);
     }
@@ -86,7 +87,7 @@ public partial class CachingTokenCredentialSpecs
         var accessToken1 = await RequestAccessTokenAsync(Scope1);
 
         // Second request
-        FakeClock.UtcNow += TimeSpan.FromMinutes(advancementInMinutes);
+        FakeClock.Advance(TimeSpan.FromMinutes(advancementInMinutes));
         var accessToken2 = await RequestAccessTokenAsync(Scope1);
         accessToken2.Should().BeEquivalentTo(accessToken1, "the old token should have been retrieved from cache");
 
@@ -123,7 +124,7 @@ public partial class CachingTokenCredentialSpecs
         FakeCredential.NumberOfRequests.Should().Be(1, $"{i}");
 
         // Multiple requests
-        FakeClock.UtcNow += TimeSpan.FromMinutes(59);
+        FakeClock.Advance(TimeSpan.FromMinutes(59));
         FakeCredential.SetPerformanceOverhead(TimeSpan.FromMilliseconds(10));
         await Task.WhenAll(Enumerable.Range(0, 100).Select(_ => RequestAccessTokenAsync(Scope1)));
 
@@ -177,7 +178,7 @@ public sealed partial class CachingTokenCredentialSpecs : IDisposable
 
     public CachingTokenCredentialSpecs()
     {
-        FakeClock = new FakeClock();
+        FakeClock = new FakeTimeProvider();
         FakeCredential = new FakeCredential(FakeClock);
         FakeCredential.RegisterScope(Scope1);
         FakeCredential.RegisterScope(Scope2);
@@ -197,7 +198,7 @@ public sealed partial class CachingTokenCredentialSpecs : IDisposable
             : null;
         services
             .AddCachingTokenCredential(FakeCredential, cache)
-            .AddSingleton<ICachingTokenClock>(FakeClock);
+            .AddSingleton<TimeProvider>(FakeClock);
         var serviceProvider = services.BuildServiceProvider();
         return serviceProvider.GetRequiredService<TokenCredential>();
     }
@@ -221,7 +222,7 @@ public sealed partial class CachingTokenCredentialSpecs : IDisposable
     }
 
     private FakeCredential FakeCredential { get; }
-    private FakeClock FakeClock { get; }
+    private FakeTimeProvider FakeClock { get; }
     private AccessMode? SelectedMode { get; set; }
     private Cache SelectedCache { get; set; } = Cache.InMem;
     private TokenCredential? _sut;

@@ -24,7 +24,7 @@ public class InMemoryAccessTokenCache : IAccessTokenCache
     private readonly ConcurrentDictionary<string, AccessTokenCacheEntry> _accessTokenCache = new();
 
     public AccessTokenCacheEntry? TryGetValue(string key) =>
-        _accessTokenCache.TryGetValue(key, out var v) ? v : null;
+        _accessTokenCache.GetValueOrDefault(key);
 
     public ValueTask<AccessTokenCacheEntry?> TryGetValueAsync(string key)
     {
@@ -43,7 +43,7 @@ public class InMemoryAccessTokenCache : IAccessTokenCache
 
 public class LocalFileSystemAccessTokenCache : IAccessTokenCache
 {
-    private readonly IAccessTokenCache _inMemCache = new InMemoryAccessTokenCache();
+    private readonly InMemoryAccessTokenCache _inMemCache = new();
     private static readonly SemaphoreSlim _semaphore = new(1, 1);
     private readonly string _rootDir;
 

@@ -127,9 +127,7 @@ internal class CachingTokenCredentialWorker
         try
         {
             var t2 = await TryGetCachedAccessTokenWithAutomaticRenewalAsync(cancellationToken);
-            if (t2 != null)
-                return t2.Value;
-            return await GetTokenAndUpdateCacheAsync(requestContext, cancellationToken).ConfigureAwait(false);
+            return t2 ?? await GetTokenAndUpdateCacheAsync(requestContext, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -145,11 +143,8 @@ internal class CachingTokenCredentialWorker
         _semaphore.Wait(cancellationToken);
         try
         {
-
             var t2 = TryGetCachedAccessTokenWithAutomaticRenewal(cancellationToken);
-            if (t2 != null)
-                return t2.Value;
-            return GetTokenAndUpdateCache(requestContext, cancellationToken);
+            return t2 ?? GetTokenAndUpdateCache(requestContext, cancellationToken);
         }
         finally
         {

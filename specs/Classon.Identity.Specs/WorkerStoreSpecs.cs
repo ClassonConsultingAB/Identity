@@ -1,6 +1,7 @@
 ﻿using System;
 using Classon.Identity.Specs.Support;
 using FluentAssertions;
+using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
 namespace Classon.Identity.Specs;
@@ -11,8 +12,9 @@ public class WorkerStoreSpecs
 
     public WorkerStoreSpecs()
     {
-        var fakeClock = new FakeClock();
-        Sut = new WorkerStore(new FakeCredential(fakeClock), 0.0, new InMemoryAccessTokenCache(), fakeClock);
+        var fakeClock = new FakeTimeProvider();
+        Sut = new WorkerStore(
+            new FakeCredential(fakeClock), 0.0, new InMemoryAccessTokenCache(), fakeClock);
     }
 
     private static string GenerateKey() => Guid.NewGuid().ToString();

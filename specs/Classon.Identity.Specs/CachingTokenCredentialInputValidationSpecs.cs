@@ -1,6 +1,7 @@
 ﻿using System;
 using Classon.Identity.Specs.Support;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
 namespace Classon.Identity.Specs;
@@ -26,6 +27,7 @@ public class CachingTokenCredentialInputValidationSpecs
 
         void Action() =>
             new ServiceCollection()
-                .AddCachingTokenCredential(new FakeCredential(new FakeClock()), countAsNearExpirationFactor: factor);
+                .AddCachingTokenCredential(
+                    new FakeCredential(new FakeTimeProvider()), countAsNearExpirationFactor: factor);
     }
 }

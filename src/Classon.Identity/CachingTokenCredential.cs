@@ -11,14 +11,14 @@ public class CachingTokenCredential : TokenCredential
 
     public static CachingTokenCredential Create(
         TokenCredential credential, double countAsNearExpirationFactor = 0.1,
-        IAccessTokenCache? accessTokenCache = null, ICachingTokenClock? clock = null) =>
+        IAccessTokenCache? accessTokenCache = null, TimeProvider? clock = null) =>
         new(credential, countAsNearExpirationFactor,
             accessTokenCache ?? new InMemoryAccessTokenCache(),
-            clock ?? new CachingTokenClock());
+            clock ?? TimeProvider.System);
 
     private CachingTokenCredential(
         TokenCredential credential, double countAsNearExpirationFactor, IAccessTokenCache accessTokenCache,
-        ICachingTokenClock clock)
+        TimeProvider clock)
     {
         _workerStore = new WorkerStore(credential, countAsNearExpirationFactor, accessTokenCache, clock);
     }
@@ -79,7 +79,7 @@ internal class WorkerStore
 
     public WorkerStore(
         TokenCredential credential, double countAsNearExpirationFactor, IAccessTokenCache accessTokenCache,
-        ICachingTokenClock clock)
+        TimeProvider clock)
     {
         CreateWorker = key => new CachingTokenCredentialWorker(
             key, credential, countAsNearExpirationFactor, accessTokenCache, clock);
@@ -102,13 +102,13 @@ internal class CachingTokenCredentialWorker
 {
     private readonly string _key;
     private readonly TokenCredential _credential;
-    private readonly ICachingTokenClock _clock;
+    private readonly TimeProvider _clock;
     private readonly double _countAsNearExpirationFactor;
     private readonly IAccessTokenCache _accessTokenCache;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     public CachingTokenCredentialWorker(string key, TokenCredential credential,
-        double countAsNearExpirationFactor, IAccessTokenCache accessTokenCache, ICachingTokenClock clock)
+        double countAsNearExpirationFactor, IAccessTokenCache accessTokenCache, TimeProvider clock)
     {
         _key = key;
         _credential = credential;
@@ -215,10 +215,10 @@ internal class CachingTokenCredentialWorker
     }
 
     private bool IsNearExpiration(AccessToken accessToken, TimeSpan validRange) =>
-        _clock.UtcNow >= accessToken.ExpiresOn.Subtract(validRange.Multiply(_countAsNearExpirationFactor));
+        _clock.GetUtcNow() >= accessToken.ExpiresOn.Subtract(validRange.Multiply(_countAsNearExpirationFactor));
 
     private bool IsExpired(AccessToken accessToken) =>
-        _clock.UtcNow >= accessToken.ExpiresOn;
+        _clock.GetUtcNow() >= accessToken.ExpiresOn;
 
     private AccessToken? _lastUpdatedAccessToken;
 
@@ -247,7 +247,7 @@ internal class CachingTokenCredentialWorker
 
     private AccessTokenCacheEntry CreateCacheEntry(AccessToken accessToken, TokenRequestContext requestContext)
     {
-        var validityRange = accessToken.ExpiresOn - _clock.UtcNow;
+        var validityRange = accessToken.ExpiresOn - _clock.GetUtcNow();
         return new AccessTokenCacheEntry(validityRange, accessToken, requestContext);
     }
 

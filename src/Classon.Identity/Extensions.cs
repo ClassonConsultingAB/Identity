@@ -24,7 +24,6 @@ public static class CachingTokenCredentialExtensions
         if (countAsNearExpirationFactor is < 0.0 or > 1.0)
             throw new ArgumentOutOfRangeException(nameof(countAsNearExpirationFactor));
         return builder
-            .AddSingleton<TimeProvider>(_ => TimeProvider.System)
             .AddSingleton<TokenCredential>(sp =>
                 CachingTokenCredential.Create(
                     credential, countAsNearExpirationFactor, accessTokenCache, sp.GetService<TimeProvider>()));

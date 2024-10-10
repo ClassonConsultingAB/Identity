@@ -14,12 +14,8 @@ defaults:
     working-directory: ./scripts
     shell: pwsh
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
-  BuildAndPublish:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -35,16 +31,3 @@ jobs:
           GITHUBPAT: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./publish.ps1
-      - name: Dependabot metadata
-        if: ${{ github.actor == 'dependabot[bot]' }}
-        id: metadata
-        uses: dependabot/fetch-metadata@v2
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-      - name: Merge Dependabot PRs
-        if: github.actor == 'dependabot[bot]' && (steps.metadata.outputs.update-type == 'version-update:semver-minor' || steps.metadata.outputs.update-type == 'version-update:semver-patch')
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.number }}
-        run: |
-          gh pr merge $env:PR_NUMBER --auto --squash

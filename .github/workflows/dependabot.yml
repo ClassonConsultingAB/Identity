@@ -11,7 +11,6 @@ on:
 
 defaults:
   run:
-    working-directory: ./scripts
     shell: pwsh
 
 permissions:

@@ -32,5 +32,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
+          REPO_AND_OWNER: ${{ github.repository }}
         run: |
-          gh pr merge $env:PR_NUMBER --auto --squash
+          gh pr merge $env:PR_NUMBER --auto --squash --repo $env:REPO_AND_OWNER

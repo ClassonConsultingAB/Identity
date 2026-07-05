@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
 using Classon.Identity.Specs.Support;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
@@ -21,7 +20,7 @@ public partial class CachingTokenCredentialSpecs
         var fakeToken = FakeCredential.CreateFakeToken();
         FakeCredential.RegisterScope(Scope1, () => fakeToken);
         var accessToken = await RequestAccessTokenAsync(Scope1);
-        accessToken.Should().BeEquivalentTo(fakeToken.Token);
+        Assert.Equal(fakeToken.Token, accessToken);
     }
 
     [Theory, InlineData(AccessMode.Async), InlineData(AccessMode.Sync)]
@@ -30,8 +29,8 @@ public partial class CachingTokenCredentialSpecs
         SelectedMode = mode;
         var token1 = await RequestAccessTokenAsync(Scope1);
         var token2 = await RequestAccessTokenAsync(Scope1);
-        token2.Should().BeEquivalentTo(token1);
-        FakeCredential.NumberOfRequests.Should().Be(1);
+        Assert.Equal(token1, token2);
+        Assert.Equal(1, FakeCredential.NumberOfRequests);
     }
 
     [Theory, InlineData(AccessMode.Async), InlineData(AccessMode.Sync)]
@@ -42,7 +41,7 @@ public partial class CachingTokenCredentialSpecs
         await Task.WhenAll(
             Enumerable.Range(0, 2).Select(_ =>
                 Task.Run(() => RequestAccessTokenAsync(Scope1))));
-        FakeCredential.NumberOfRequests.Should().Be(1);
+        Assert.Equal(1, FakeCredential.NumberOfRequests);
     }
 
     [Theory, InlineData(AccessMode.Async), InlineData(AccessMode.Sync)]
@@ -51,7 +50,7 @@ public partial class CachingTokenCredentialSpecs
         SelectedMode = mode;
         var accessToken1 = await RequestAccessTokenAsync(Scope1);
         var accessToken2 = await RequestAccessTokenAsync(Scope2);
-        accessToken1.Should().NotBeEquivalentTo(accessToken2);
+        Assert.NotEqual(accessToken2, accessToken1);
     }
 
     [Theory, InlineData(AccessMode.Async), InlineData(AccessMode.Sync)]
@@ -61,7 +60,7 @@ public partial class CachingTokenCredentialSpecs
         var accessToken1 = await RequestAccessTokenAsync(Scope1);
         FakeClock.Advance(TimeSpan.FromMinutes(60));
         var accessToken2 = await RequestAccessTokenAsync(Scope1);
-        accessToken2.Should().NotBeEquivalentTo(accessToken1);
+        Assert.NotEqual(accessToken1, accessToken2);
     }
 
     [Theory, InlineData(AccessMode.Async), InlineData(AccessMode.Sync)]
@@ -71,7 +70,7 @@ public partial class CachingTokenCredentialSpecs
         var accessToken1 = await RequestAccessTokenAsync(Scope1);
         FakeClock.Advance(TimeSpan.FromMinutes(60).Subtract(TimeSpan.FromTicks(1)));
         var accessToken2 = await RequestAccessTokenAsync(Scope1);
-        accessToken2.Should().BeEquivalentTo(accessToken1);
+        Assert.Equal(accessToken1, accessToken2);
     }
 
     [Theory]
@@ -89,15 +88,17 @@ public partial class CachingTokenCredentialSpecs
         // Second request
         FakeClock.Advance(TimeSpan.FromMinutes(advancementInMinutes));
         var accessToken2 = await RequestAccessTokenAsync(Scope1);
-        accessToken2.Should().BeEquivalentTo(accessToken1, "the old token should have been retrieved from cache");
+        // The old token should have been retrieved from cache
+        Assert.Equal(accessToken1, accessToken2);
 
         // Third request
         await Task.Delay(100); // Wait so that background renew have time to complete
         var accessToken3 = await RequestAccessTokenAsync(Scope1);
         if (expectedRenew == SilentRenew.Yes)
-            accessToken3.Should().NotBeEquivalentTo(accessToken1, "it should have been renewed in background");
+            // It should have been renewed in background
+            Assert.NotEqual(accessToken1, accessToken3);
         else
-            accessToken3.Should().BeEquivalentTo(accessToken1);
+            Assert.Equal(accessToken1, accessToken3);
     }
 
     [Fact]
@@ -121,7 +122,7 @@ public partial class CachingTokenCredentialSpecs
 
         // First request
         await RequestAccessTokenAsync(Scope1);
-        FakeCredential.NumberOfRequests.Should().Be(1, $"{i}");
+        Assert.Equal(1, FakeCredential.NumberOfRequests);
 
         // Multiple requests
         FakeClock.Advance(TimeSpan.FromMinutes(59));
@@ -129,7 +130,7 @@ public partial class CachingTokenCredentialSpecs
         await Task.WhenAll(Enumerable.Range(0, 100).Select(_ => RequestAccessTokenAsync(Scope1)));
 
         await Task.Delay(40); // Wait so that background renew have time to complete
-        FakeCredential.NumberOfRequests.Should().Be(2);
+        Assert.Equal(2, FakeCredential.NumberOfRequests);
     }
 
     [Theory, InlineData(AccessMode.Sync), InlineData(AccessMode.Async)]
@@ -140,7 +141,7 @@ public partial class CachingTokenCredentialSpecs
         var accessToken1 = await RequestAccessTokenAsync(Scope1);
         _sut = null;
         var accessToken2 = await RequestAccessTokenAsync(Scope1);
-        accessToken2.Should().Be(accessToken1);
+        Assert.Equal(accessToken1, accessToken2);
     }
 
     [Theory, InlineData(AccessMode.Sync), InlineData(AccessMode.Async)]
@@ -151,7 +152,7 @@ public partial class CachingTokenCredentialSpecs
         var accessToken1 = await RequestAccessTokenAsync(Scope1);
         ClearCacheFiles();
         var accessToken2 = await RequestAccessTokenAsync(Scope1);
-        accessToken2.Should().Be(accessToken1);
+        Assert.Equal(accessToken1, accessToken2);
     }
 
     [Theory, InlineData(AccessMode.Sync), InlineData(AccessMode.Async)]
@@ -166,7 +167,7 @@ public partial class CachingTokenCredentialSpecs
 
         _sut = null;
         var accessToken2 = await RequestAccessTokenAsync(Scope1);
-        accessToken2.Should().NotBe(accessToken1);
+        Assert.NotEqual(accessToken1, accessToken2);
     }
 
 }

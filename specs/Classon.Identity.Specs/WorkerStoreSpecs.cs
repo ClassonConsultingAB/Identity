@@ -1,6 +1,5 @@
 ﻿using System;
 using Classon.Identity.Specs.Support;
-using FluentAssertions;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
@@ -24,13 +23,13 @@ public class WorkerStoreSpecs
     {
         var key1 = GenerateKey();
         var worker = Sut.GetOrCreateWorker(key1);
-        Sut.GetOrCreateWorker(key1).Should().Be(worker);
+        Assert.Same(worker, Sut.GetOrCreateWorker(key1));
     }
 
     [Fact]
     public void GivenDifferentKeys_ShouldReturnDifferentWorkers()
     {
         var worker = Sut.GetOrCreateWorker(GenerateKey());
-        Sut.GetOrCreateWorker(GenerateKey()).Should().NotBe(worker);
+        Assert.NotSame(worker, Sut.GetOrCreateWorker(GenerateKey()));
     }
 }

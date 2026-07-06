@@ -1,6 +1,6 @@
 param(
     [string[]]$Packages,
-    $GitHubPat = $env:GITHUBPAT,
+    $Pat = $env:GH_TOKEN,
     $Source = 'https://nuget.pkg.github.com/ClassonConsultingAB/index.json')
 
 $ErrorActionPreference = 'Stop'
@@ -19,6 +19,6 @@ Task Publish {
     }
     foreach ($package in $Packages) {
         $packagePath = Resolve-Path $package
-        Exec { dotnet nuget push $packagePath --api-key $GitHubPat --source $Source --skip-duplicate }
+        Exec { dotnet nuget push $packagePath --api-key $Pat --source $Source --skip-duplicate }
     }
 }

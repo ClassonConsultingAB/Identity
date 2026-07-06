@@ -28,6 +28,6 @@ jobs:
       - name: Publish
         if: github.actor != 'dependabot[bot]'
         env:
-          GITHUBPAT: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./publish.ps1

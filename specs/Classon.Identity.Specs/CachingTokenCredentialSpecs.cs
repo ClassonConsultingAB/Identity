@@ -112,6 +112,16 @@ public partial class CachingTokenCredentialSpecs
         await t;
     }
 
+    [Fact]
+    public async Task GivenNoRegisteredTimeProvider_ShouldFallBackToSystemClock()
+    {
+        var services = new ServiceCollection();
+        services.AddCachingTokenCredential(FakeCredential);
+        var credential = services.BuildServiceProvider().GetRequiredService<TokenCredential>();
+        var accessToken = await credential.GetTokenAsync(Scope1);
+        Assert.False(string.IsNullOrEmpty(accessToken));
+    }
+
     [Theory, Repeat(20)]
     public async Task GivenTimeAdvancement_ShouldRequestNewWhenNearlyExpiredOnlyOnce(int i)
     {

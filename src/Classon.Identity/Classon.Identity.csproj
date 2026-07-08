@@ -13,10 +13,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="Classon.Identity.Specs" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="Azure.Core" Version="1.60.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
     </ItemGroup>

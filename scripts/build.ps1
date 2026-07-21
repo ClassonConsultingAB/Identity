@@ -1,4 +1,4 @@
-param([switch]$SkipTests, [switch]$SkipPack)
+param([switch]$SkipTests, [switch]$SkipPack, [switch]$Publish)
 
 $ErrorActionPreference = 'Stop'
 
@@ -15,20 +15,40 @@ $packTargets = @(
     (Join-Path $rootPath src\Classon.Identity\Classon.Identity.csproj)
 )
 $configuration = 'Release'
+$organization = 'ClassonConsultingAB'
+$packageName = 'Classon.Identity'
+$nugetSource = "https://nuget.pkg.github.com/$organization/index.json"
+
+if (Test-Path $outputDirPath) { Remove-Item $outputDirPath -Recurse }
+New-Item $outputDirPath -ItemType Directory | Out-Null
+Install-GitVersion
+Exec "dotnet-gitversion $rootPath /output file /outputfile $versionFilePath"
+$version = (Get-Content $versionFilePath | ConvertFrom-Json).NuGetVersionV2
+
+if ($Publish) {
+    if ([string]::IsNullOrEmpty($env:GH_TOKEN)) {
+        throw 'GH_TOKEN environment variable is not set.'
+    }
+
+    Task 'Check already published' {
+        $orgPackageNames = @(Exec "gh api orgs/$organization/packages?package_type=nuget --jq '.[].name'" -ReturnOutput)
+        $alreadyPublished = $false
+        if ($orgPackageNames -contains $packageName) {
+            $existingVersions = @(Exec "gh api orgs/$organization/packages/nuget/$packageName/versions --jq '.[].name'" -ReturnOutput)
+            $alreadyPublished = $existingVersions -contains $version
+        }
+        if ($alreadyPublished) {
+            Write-Host "Version $version is already published to $nugetSource. Nothing to do."
+            exit 0
+        }
+    }
+}
 
 Task Cleanup {
-    if (Test-Path $outputDirPath) {
-        Remove-Item $outputDirPath -Recurse
-    }
-    New-Item $outputDirPath -ItemType Directory | Out-Null
     Exec "dotnet clean $slnPath --verbosity minimal"
 }
 
 Task Build {
-    Install-GitVersion
-    Exec "dotnet-gitversion $rootPath /output file /outputfile $versionFilePath"
-    (Get-Content $versionFilePath | ConvertFrom-Json).NuGetVersionV2 | `
-        Set-Variable version -Scope Script
     Exec "dotnet restore $slnPath"
     Exec "dotnet build $slnPath --configuration $configuration /p:Version=$version --no-restore"
 }
@@ -47,6 +67,19 @@ if (!$SkipPack) {
     Task Pack {
         foreach ($target in $packTargets) {
             Exec "dotnet pack $target --configuration $configuration --no-build /p:Version=$version --output $outputDirPath"
+        }
+    }
+}
+
+if ($Publish) {
+    Task Publish {
+        $packages = Get-ChildItem $outputDirPath -Filter *.nupkg | Select-Object -ExpandProperty FullName
+        if ($packages.Length -eq 0) {
+            Fail 'Found no packages to publish'
+        }
+        foreach ($package in $packages) {
+            $packagePath = Resolve-Path $package
+            Exec { dotnet nuget push $packagePath --api-key $env:GH_TOKEN --source $nugetSource --skip-duplicate }
         }
     }
 }

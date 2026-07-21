@@ -8,26 +8,29 @@ on:
   pull_request:
     branches:
       - main
+  schedule:
+    # GitHub suppresses push-triggered workflow runs resulting from GITHUB_TOKEN actions, 
+    # such as from .github/dependabot.yml.
+    - cron: '0 20 * * 0'
 
 defaults:
   run:
-    working-directory: ./scripts
     shell: pwsh
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    permissions:
+      packages: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Build
-        run: |
-          ./build.ps1
-      - name: Publish
-        if: github.actor != 'dependabot[bot]'
+
+      - name: Build and publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
-          ./publish.ps1
+          ./scripts/build.ps1 -Publish:($env:EVENT_NAME -ne 'pull_request')
